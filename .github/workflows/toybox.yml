@@ -43,6 +43,6 @@ jobs:
       env:
         HOSTCC: scripts/zcc
         ZIG_FLAGS: ${{ matrix.target }}
-      run: make
+      run: make toybox
     - name: Test
       run: VERBOSE=all make tests
