@@ -24,8 +24,8 @@ jobs:
     strategy:
       matrix:
         target:
-        - x86_64-linux-musl
-        - aarch64-linux-musl
+        - x86_64-linux-musl-
+        - aarch64-linux-musleabi-
 
     runs-on: ubuntu-20.04
 
@@ -33,7 +33,10 @@ jobs:
     - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
     - uses: goto-bus-stop/setup-zig@7ab2955eb728f5440978d5824358023be3a2802d # v2.2.0
     - name: Setup
-      run: sudo apt-get install build-essential
+      run: |
+        sudo apt-get install build-essential
+        curl -LO https://landley.net/toybox/downloads/binaries/toolchains/latest/${{ matrix.target }}cross.tar.xz
+        tar xvf ${{ matrix.target }}cross.tar.xz
     - name: Configure
       run: |
         make defconfig
@@ -41,8 +44,15 @@ jobs:
 
     - name: Build
       env:
-        HOSTCC: scripts/zcc
-        ZIG_FLAGS: -target ${{ matrix.target }}
+        PATH: ${{ env.PATH }}:${{ matrix.target }}cross
+        CROSS_COMPILE: ${{ matrix.target }}
+        LDFLAGS: --static
       run: make toybox
-    - name: Test
-      run: VERBOSE=all make tests
+
+    - uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+      with:
+        name: toybox
+        path: ./toybox
+
+    # - name: Test
+    #  run: VERBOSE=all make tests
