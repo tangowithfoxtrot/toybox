@@ -24,8 +24,11 @@ jobs:
     strategy:
       matrix:
         target:
-        - x86_64-linux-musl-
-        - aarch64-linux-musleabi-
+        - toolchain: x86_64-linux-musl-
+          arch: x86_64
+
+        - toolchain: aarch64-linux-musleabi-
+          arch: aarch64
 
     runs-on: ubuntu-20.04
 
@@ -35,8 +38,8 @@ jobs:
     - name: Setup
       run: |
         sudo apt-get install build-essential
-        curl -LO https://landley.net/toybox/downloads/binaries/toolchains/latest/${{ matrix.target }}cross.tar.xz
-        tar xvf ${{ matrix.target }}cross.tar.xz
+        curl -LO https://landley.net/toybox/downloads/binaries/toolchains/latest/${{ matrix.target.toolchain }}cross.tar.xz
+        tar xvf ${{ matrix.target.toolchain }}cross.tar.xz
     - name: Configure
       run: |
         make defconfig
@@ -44,14 +47,13 @@ jobs:
 
     - name: Build
       env:
-        # PATH: ${{ env.PATH }}:${{ matrix.target }}cross
-        CROSS_COMPILE: ./${{ matrix.target }}cross/bin/${{ matrix.target }}
+        CROSS_COMPILE: ./${{ matrix.target.toolchain }}cross/bin/${{ matrix.target.toolchain }}
         LDFLAGS: --static
       run: make toybox
 
     - uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
       with:
-        name: toybox
+        name: toybox-${{ matrix.target.arch }}
         path: ./toybox
 
     # - name: Test
