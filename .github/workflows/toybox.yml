@@ -1,11 +1,10 @@
 name: toybox CI
 
 on:
-  schedule:
-    - cron:  '0 2 * * *'
+  workflow_dispatch:
   push:
     branches: [ master ]
-
+  pull_request:
 jobs:
   MacOS-12:
     runs-on: macos-12
@@ -22,15 +21,28 @@ jobs:
       run: VERBOSE=all make tests
 
   Ubuntu-20_04:
+    strategy:
+      matrix:
+        target:
+        - x86_64-linux-musl
+        - aarch64-linux-musl
+
     runs-on: ubuntu-20.04
 
     steps:
     - uses: actions/checkout@v2
+    - uses: goto-bus-stop/setup-zig@7ab2955eb728f5440978d5824358023be3a2802d # v2.2.0
     - name: Setup
       run: sudo apt-get install build-essential
     - name: Configure
-      run: make defconfig
+      run: |
+        make defconfig
+        sed -i -e 's/^# CONFIG_VI is not set$/CONFIG_VI=y/' -e 's/^# CONFIG_SH is not set$/CONFIG_SH=y/' .config
+
     - name: Build
+      env:
+        HOSTCC: scripts/zcc
+        ZIG_FLAGS: ${{ matrix.target }}
       run: make
     - name: Test
       run: VERBOSE=all make tests
