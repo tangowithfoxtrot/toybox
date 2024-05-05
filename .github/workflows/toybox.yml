@@ -42,7 +42,7 @@ jobs:
     - name: Build
       env:
         HOSTCC: scripts/zcc
-        ZIG_FLAGS: ${{ matrix.target }}
+        ZIG_FLAGS: -target ${{ matrix.target }}
       run: make toybox
     - name: Test
       run: VERBOSE=all make tests
