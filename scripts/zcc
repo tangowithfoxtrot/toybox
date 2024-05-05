@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# wrapper for `zig cc`
+# helps with parts of the make scripts that aren't quoted
+
+zig cc "$@" $ZIG_FLAGS
