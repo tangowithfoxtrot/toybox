@@ -45,7 +45,7 @@ jobs:
     - name: Build
       env:
         # PATH: ${{ env.PATH }}:${{ matrix.target }}cross
-        CROSS_COMPILE: ./${{ matrix.target }}cross
+        CROSS_COMPILE: ./${{ matrix.target }}cross/bin/${{ matrix.target }}
         LDFLAGS: --static
       run: make toybox
 
